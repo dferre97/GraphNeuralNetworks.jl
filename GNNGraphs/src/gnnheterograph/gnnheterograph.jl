@@ -25,7 +25,7 @@ It is similar to [`GNNGraph`](@ref) but nodes and edges are of different types.
 
 # Fields
 
-- `graph`: A dictionary that maps (source_type, edge_type, target_type) triples to (source, target) index vectors.
+- `graph`: A dictionary that maps `(source_type, edge_type, target_type)` triples to `(source, target)` index vectors.
 - `num_nodes`: The number of nodes for each type.
 - `num_edges`: The number of edges for each type.
 - `ndata`: Node features.
