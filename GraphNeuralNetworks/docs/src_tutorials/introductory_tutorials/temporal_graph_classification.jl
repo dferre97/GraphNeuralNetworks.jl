@@ -16,6 +16,10 @@ using LinearAlgebra
 using MLDatasets: TemporalBrains
 using CUDA # comment out if you don't have a CUDA GPU
 
+ENV["DATADEPS_ALWAYS_ACCEPT"] = "true"  # don't ask for dataset download confirmation
+Random.seed!(17); # for reproducibility
+
+
 # ## Dataset: TemporalBrains
 # The TemporalBrains dataset contains a collection of functional brain connectivity networks from 1000 subjects obtained from resting-state functional MRI data from the [Human Connectome Project (HCP)](https://www.humanconnectome.org/study/hcp-young-adult/document/extensively-processed-fmri-data-documentation). 
 # Functional connectivity is defined as the temporal dependence of neuronal activation patterns of anatomically separated brain regions.
@@ -28,7 +32,7 @@ using CUDA # comment out if you don't have a CUDA GPU
 brain_dataset = TemporalBrains()
 
 # After loading the dataset from the MLDatasets.jl package, we see that there are 1000 graphs and we need to convert them to the `TemporalSnapshotsGNNGraph` format.
-# So we create a function called `data_loader` that implements the latter and splits the dataset into the training set that will be used to train the model and the test set that will be used to test the performance of the model.
+# So we create a function called `data_loader` that implements the latter and splits the dataset into the training set that will be used to train the model and the test set that will be used to test the performance of the model. Due to computational costs, we use only 250 out of the original 1000 graphs, 200 for training and 50 for testing.
 
 
 function data_loader(brain_dataset)
@@ -36,15 +40,15 @@ function data_loader(brain_dataset)
     dataset = Vector{TemporalSnapshotsGNNGraph}(undef, length(graphs))
     for i in 1:length(graphs)
         graph = graphs[i]
-        dataset[i] = TemporalSnapshotsGNNGraph(GraphNeuralNetworks.mlgraph2gnngraph.(graph.snapshots))
-		# Add graph and node features
+        dataset[i] = TemporalSnapshotsGNNGraph(GNNGraphs.mlgraph2gnngraph.(graph.snapshots))
+		## Add graph and node features
         for t in 1:27
 			s = dataset[i].snapshots[t]
             s.ndata.x = [I(102); s.ndata.x']
         end
         dataset[i].tgdata.g = Float32.(Flux.onehot(graph.graph_data.g, ["F", "M"]))
     end
-    # Split the dataset into a 80% training set and a 20% test set
+    ## Split the dataset into a 80% training set and a 20% test set
     train_loader = dataset[1:200]
     test_loader = dataset[201:250]
     return train_loader, test_loader
@@ -65,8 +69,7 @@ end
 
 function (l::GlobalPool)(g::TemporalSnapshotsGNNGraph, x::AbstractVector)
     h = [reduce_nodes(l.aggr, g[i], x[i]) for i in 1:(g.num_snapshots)]
-    sze = size(h[1])
-    reshape(reduce(hcat, h), sze[1], length(h))
+    return mean(h)
 end
 
 # Then we implement the constructor of the model, which we call `GenderPredictionModel`, and the foward pass.
@@ -91,7 +94,6 @@ end
 function (m::GenderPredictionModel)(g::TemporalSnapshotsGNNGraph)
     h = m.gin(g, g.ndata.x)
     h = m.globalpool(g, h)
-    h = mean(h, dims=2)
     return m.dense(h)
 end
 	
@@ -135,16 +137,16 @@ function train(dataset)
             end
             Flux.update!(opt, model, grads[1])
         end
-        if  epoch % 10 == 0
+        if  epoch % 20 == 0
             report(epoch)
         end
     end
     return model
 end
 
+train(brain_dataset);
 
-train(brain_dataset)
 
-## Conclusions
 #
-# In this tutorial, we implemented a very simple architecture to classify temporal graphs in the context of gender classification using brain data. We then trained the model on the GPU for 100 epochs on the TemporalBrains dataset. The accuracy of the model is approximately 75-80%, but can be improved by fine-tuning the parameters and training on more data.
+# # Conclusions
+# In this tutorial, we implemented a very simple architecture to classify temporal graphs in the context of gender classification using brain data. We then trained the model on the GPU for 100 epochs on the TemporalBrains dataset. The accuracy of the model is approximately 85%, but can be improved by fine-tuning the parameters and training on more data.
