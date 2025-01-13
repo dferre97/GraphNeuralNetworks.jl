@@ -1,7 +1,7 @@
 name = "GNNGraphs"
 uuid = "aed8fd31-079b-4b5a-b342-a13352159b8c"
 authors = ["Carlo Lucibello and contributors"]
-version = "1.4.1"
+version = "1.4.2"
 
 [deps]
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
