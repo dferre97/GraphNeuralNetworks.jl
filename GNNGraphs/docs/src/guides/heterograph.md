@@ -88,28 +88,28 @@ julia> g.etypes  # edge types
 
 Node, edge, and graph features can be added at construction time or later using:
 ```jldoctest hetero
-# equivalent to g.ndata[:user][:x] = ...
-julia> g[:user].x = rand(Float32, 64, 3);
+julia> g[:user].x = rand(Float32, 64, 3); # equivalent to g.ndata[:user][:x] = ...
 
 julia> g[:movie].z = rand(Float32, 64, 13);
 
-# equivalent to g.edata[(:user, :rate, :movie)][:e] = ...
-julia> g[:user, :rate, :movie].e = rand(Float32, 64, 4);
+julia> g[:user, :rate, :movie].e = rand(Float32, 64, 4); # equivalent to g.edata[(:user, :rate, :movie)][:e] = ...
 
 julia> g
 GNNHeteroGraph:
   num_nodes: Dict(:movie => 13, :user => 3)
   num_edges: Dict((:user, :rate, :movie) => 4)
   ndata:
-        :movie  =>  DataStore(z = [64×13 Matrix{Float32}])
-        :user  =>  DataStore(x = [64×3 Matrix{Float32}])
+    :movie  =>  DataStore(z = [64×13 Matrix{Float32}])
+    :user  =>  DataStore(x = [64×3 Matrix{Float32}])
   edata:
-        (:user, :rate, :movie)  =>  DataStore(e = [64×4 Matrix{Float32}])
+    (:user, :rate, :movie)  =>  DataStore(e = [64×4 Matrix{Float32}])
 ```
 
 ## Batching
 Similarly to graphs, also heterographs can be batched together.
 ```jldoctest hetero
+julia> using MLUtils
+
 julia> gs = [rand_bipartite_heterograph((5, 10), 20) for _ in 1:32];
 
 julia> MLUtils.batch(gs)

@@ -12,6 +12,10 @@ using GraphNeuralNetworks
 using Flux, GNNGraphs, GNNlib, Graphs
 using DocumenterInterLinks
 
+ENV["DATADEPS_ALWAYS_ACCEPT"] = true # for MLDatasets
+
+DocMeta.setdocmeta!(GNNGraphs, :DocTestSetup, :(using GNNGraphs, MLUtils); recursive = true)
+DocMeta.setdocmeta!(GNNlib, :DocTestSetup, :(using GNNlib); recursive = true)
 DocMeta.setdocmeta!(GraphNeuralNetworks, :DocTestSetup, :(using GraphNeuralNetworks); recursive = true)
 
 mathengine = MathJax3(Dict(:loader => Dict("load" => ["[tex]/require", "[tex]/mathtools"]),
@@ -37,7 +41,6 @@ cp(joinpath(@__DIR__, "../../GNNlib/docs/src"),
 
 makedocs(;
     modules = [GraphNeuralNetworks, GNNGraphs, GNNlib],
-    doctest = false, # TODO: enable doctest
     plugins = [interlinks],
     format = Documenter.HTML(; mathengine, 
                             prettyurls = get(ENV, "CI", nothing) == "true", 
