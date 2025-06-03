@@ -137,7 +137,7 @@ function GNNGraph(data::D;
     elseif graph_type == :dense
         graph, num_nodes, num_edges = to_dense(data; num_nodes, dir)
     elseif graph_type == :sparse
-        graph, num_nodes, num_edges = to_sparse(data; num_nodes, dir)
+        graph, num_nodes, num_edges = to_sparse(data, Float32; num_nodes, dir)
     end
 
     num_graphs = !isnothing(graph_indicator) ? maximum(graph_indicator) : 1
