@@ -11,6 +11,13 @@ const CUMAT_T = Union{CUDA.AnyCuMatrix, CUDA.CUSPARSE.CuSparseMatrix}
 # Query 
 
 GNNGraphs._rand_dense_vector(A::CUMAT_T) = CUDA.randn(size(A, 1))
+function GNNGraphs.adjacency_matrix(g::GNNGraph{<:CUMAT_T}, T::DataType = eltype(g);
+                                 dir = :out, weighted = true)
+    @assert dir ∈ [:in, :out]
+    A = g.graph
+    A = T != eltype(A) ? T.(A) : A
+    return dir == :out ? A : A'
+end
 
 # Transform
 
