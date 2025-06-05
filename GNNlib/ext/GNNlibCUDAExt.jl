@@ -13,7 +13,7 @@ using GNNGraphs: GNNGraph, COO_T, SPARSE_T
 ## gpu cuda implementation
 function GNNlib.propagate(::typeof(copy_xj), g::GNNGraph{<:Union{COO_T, SPARSE_T}}, ::typeof(+),
         xi, xj::AnyCuMatrix, e)
-    A = adjacency_matrix(g, weighted = false)
+    A = adjacency_matrix(g, eltype(xj); weighted = false)
     xj * A
 end
 
