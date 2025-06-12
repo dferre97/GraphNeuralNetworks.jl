@@ -375,10 +375,20 @@ function _degree((s, t)::Tuple, T::Type, dir::Symbol, edge_weight::AbstractVecto
     return degs
 end
 
+# QUESTION_DF: why call to binarize?
 function _degree(A::AbstractMatrix, T::Type, dir::Symbol, edge_weight::Bool, num_nodes::Int)
     if edge_weight === false
         A = binarize(A, T)
     end
+    A = eltype(A) != T ? T.(A) : A
+    return dir == :out ? vec(sum(A, dims = 2)) :
+           dir == :in ? vec(sum(A, dims = 1)) :
+           vec(sum(A, dims = 1)) .+ vec(sum(A, dims = 2))
+end
+
+# DF: sparse specialization of _degree, avoiding call to binarize
+function _degree(A::SPARSE_T, T::Type, dir::Symbol, edge_weight::Bool, num_nodes::Int)
+    @debug "Using sparse _degree specialization"
     A = eltype(A) != T ? T.(A) : A
     return dir == :out ? vec(sum(A, dims = 2)) :
            dir == :in ? vec(sum(A, dims = 1)) :
