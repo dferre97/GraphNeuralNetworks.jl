@@ -15,6 +15,7 @@ function GNNGraphs.adjacency_matrix(g::GNNGraph{<:CUMAT_T}, T::DataType = eltype
                                  dir = :out, weighted = true)
     @assert dir ∈ [:in, :out]
     @debug "Using CUDA adjacency_matrix specialization"
+    # DF: should call binarize() when weigthed=false, lacking gpu-friendly implementation of binarize rn
     A = g.graph
     A = T != eltype(A) ? T.(A) : A
     return dir == :out ? A : A'
