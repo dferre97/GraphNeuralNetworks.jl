@@ -296,6 +296,8 @@ function _rand_edges(rng, (n1, n2), m)
 end
 
 binarize(x) = map(>(0), x)
+# here just to allow CUDA extension to overload this function with correct type casting
+binarize(x, T::DataType) = binarize(x)
 
 CRC.@non_differentiable binarize(x...)
 CRC.@non_differentiable edge_encoding(x...)
