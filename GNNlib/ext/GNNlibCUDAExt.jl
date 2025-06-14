@@ -11,12 +11,12 @@ using GNNGraphs: GNNGraph, COO_T, SPARSE_T
 ## COPY_XJ 
 
 ## QUESTION_DF: this could probably be avoided alltogether, just 'fix' the default propagate method to correctly cast adjmat 
-function GNNlib.propagate(::typeof(copy_xj), g::GNNGraph{<:Union{COO_T, SPARSE_T}}, ::typeof(+),
-        xi, xj::AnyCuMatrix, e)
-    @debug "Using CUDA copy_xj propagate specialization"
-    A = adjacency_matrix(g, eltype(xj); weighted = false)
-    xj * A
-end
+# function GNNlib.propagate(::typeof(copy_xj), g::GNNGraph{<:Union{COO_T, SPARSE_T}}, ::typeof(+),
+#         xi, xj::AnyCuMatrix, e)
+#     @debug "Using CUDA copy_xj propagate specialization, $(typeof(g))"
+#     A = adjacency_matrix(g, eltype(xj); weighted = false)
+#     xj * A
+# end
 
 ## E_MUL_XJ 
 
