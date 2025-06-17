@@ -61,12 +61,15 @@ If you use GraphNeuralNetworks.jl in a scientific publication, we would apprecia
 to [our paper](https://arxiv.org/abs/2412.06354):
 
 ```
-@article{lucibello2024graphneuralnetworks,
-  title={GraphNeuralNetworks.jl: Deep Learning on Graphs with Julia},
-  author={Lucibello, Carlo and Rossi, Aurora},
-  journal={arXiv preprint arXiv:2412.06354},
-  url={https://arxiv.org/abs/2412.06354},
-  year={2024}
+@article{lucibello2025graphneuralnetworks,
+  author  = {Carlo Lucibello and Aurora Rossi},
+  title   = {GraphNeuralNetworks.jl: Deep Learning on Graphs with Julia},
+  journal = {Journal of Machine Learning Research},
+  year    = {2025},
+  volume  = {26},
+  number  = {80},
+  pages   = {1--6},
+  url     = {http://jmlr.org/papers/v26/24-2130.html}
 }
 ```
 
