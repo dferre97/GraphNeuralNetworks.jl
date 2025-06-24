@@ -223,7 +223,7 @@ end
 function propagate(::typeof(e_mul_xj), g::GNNGraph, ::typeof(+), xi, xj::AbstractMatrix,
                    e::AbstractVector)
     g = set_edge_weight(g, e)
-    A = adjacency_matrix(g, weighted = true)
+    A = adjacency_matrix(g, eltype(xj); weighted = true)
     return xj * A
 end
 
