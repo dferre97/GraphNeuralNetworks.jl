@@ -15,14 +15,6 @@ function GNNlib.propagate(::typeof(e_mul_xj), g::GNNGraph{<:Union{COO_T, SPARSE_
     propagate((xi, xj, e) -> e_mul_xj(xi, xj, e), g, +, xi, xj, e)
 end
 
-## W_MUL_XJ 
-
-## avoid the fast path on gpu until we have better cuda support
-function GNNlib.propagate(::typeof(w_mul_xj), g::GNNGraph{<:Union{COO_T, SPARSE_T}}, ::typeof(+),
-        xi, xj::AnyCuMatrix, e::Nothing)
-    propagate((xi, xj, e) -> w_mul_xj(xi, xj, e), g, +, xi, xj, e)
-end
-
 # function GNNlib.propagate(::typeof(copy_xj), g::GNNGraph, ::typeof(mean), xi, xj::AbstractMatrix, e)
 #     A = adjacency_matrix(g, weighted=false)
 #     D = compute_degree(A)
