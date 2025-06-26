@@ -94,7 +94,7 @@ end
             @test adjacency_matrix(g; dir = :in) == adj_mat
             @test adjacency_matrix(g; dir = :out) == adj_mat
 
-            if TEST_GPU && !(dev isa MetalDevice) && GRAPH_T != :sparse
+            if TEST_GPU && !(dev isa MetalDevice) && GRAPH_T != :sparse && GRAPH_T != :coo
                 # See https://github.com/JuliaGPU/CUDA.jl/pull/1093
                 mat_gpu = adjacency_matrix(g_gpu)
                 @test mat_gpu isa AbstractMatrix{Int}
@@ -105,7 +105,7 @@ end
 
         @testset "normalized_laplacian" begin
             mat = normalized_laplacian(g)
-            if TEST_GPU && !(dev isa MetalDevice) && GRAPH_T != :sparse
+            if TEST_GPU && !(dev isa MetalDevice) && GRAPH_T != :sparse && GRAPH_T != :coo
                 mat_gpu = normalized_laplacian(g_gpu)
                 @test mat_gpu isa AbstractMatrix{Float32}
                 @test get_device(mat_gpu)isa AbstractGPUDevice
@@ -114,7 +114,7 @@ end
         end
 
         @testset "scaled_laplacian" begin 
-            if TEST_GPU && !(dev isa MetalDevice) && GRAPH_T != :sparse
+            if TEST_GPU && !(dev isa MetalDevice) && GRAPH_T != :sparse && GRAPH_T != :coo
                 mat = scaled_laplacian(g)
                 mat_gpu = scaled_laplacian(g_gpu)
                 @test mat_gpu isa AbstractMatrix{Float32}

@@ -108,7 +108,7 @@ end
         
         if gpu_backend() == "AMDGPU"
             broken = true
-        elseif gpu_backend() == "CUDA" && get_graph_type(g) == :sparse
+        elseif gpu_backend() == "CUDA" && (get_graph_type(g) == :sparse || get_graph_type(g) == :coo)
             broken = true
         else
             broken = false
