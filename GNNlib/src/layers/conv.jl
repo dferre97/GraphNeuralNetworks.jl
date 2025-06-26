@@ -13,7 +13,12 @@ check_gcnconv_input(g::AbstractGNNGraph, edge_weight::Nothing) = nothing
 
 function gcn_conv(l, g::AbstractGNNGraph, x, edge_weight::EW, norm_fn::F, conv_weight::CW) where 
         {EW <: Union{Nothing, AbstractVector}, CW<:Union{Nothing,AbstractMatrix}, F}
+    # edge weights are not supported for adjacency matrix graphs
+    if edge_weight !== nothing && g isa GNNGraph{<:ADJMAT_T}
+        g = GNNGraph(g, graph_type = :coo)
+    end
     check_gcnconv_input(g, edge_weight)
+
     if conv_weight === nothing
         weight = l.weight
     else
@@ -69,13 +74,6 @@ function gcn_conv(l, g::AbstractGNNGraph, x, edge_weight::EW, norm_fn::F, conv_w
         x = weight * x
     end
     return l.σ.(x .+ l.bias)
-end
-
-# when we also have edge_weight we need to convert the graph to COO
-function gcn_conv(l, g::GNNGraph{<:ADJMAT_T}, x, edge_weight::EW, norm_fn::F, conv_weight::CW) where 
-        {EW <: Union{Nothing, AbstractVector}, CW<:Union{Nothing,AbstractMatrix}, F} 
-    g = GNNGraph(g, graph_type = :coo)
-    return gcn_conv(l, g, x, edge_weight, norm_fn, conv_weight)
 end
 
 ####################### ChebConv ######################################
