@@ -7,6 +7,7 @@ using GNNGraphs: COO_T, ADJMAT_T, SPARSE_T
 using SparseArrays
 
 const CUMAT_T = Union{CUDA.AnyCuMatrix, CUDA.CUSPARSE.CuSparseMatrix}
+const CUDA_COO_T = Tuple{T, T, V} where {T <: AnyCuArray{<:Integer}, V <: Union{Nothing, AnyCuArray}}
 
 # Query 
 
@@ -35,5 +36,25 @@ function sort_edge_index(u::AnyCuArray, v::AnyCuArray)
     sort_edge_index(u, v) |> dev
 end
 
+# Convert
+
+function GNNGraphs.to_sparse(coo::CUDA_COO_T, T = nothing; dir = :out, num_nodes = nothing,
+                   weighted = true)
+    s, t, eweight = coo
+    T = T === nothing ? (eweight === nothing ? eltype(s) : eltype(eweight)) : T
+
+    if eweight === nothing || !weighted
+        eweight = fill!(similar(s, T), 1)
+    end
+
+    num_nodes::Int = isnothing(num_nodes) ? max(maximum(s), maximum(t)) : num_nodes
+    A = CUDA.CUSPARSE.CuSparseMatrixCOO{T,eltype(s)}(s, t, eweight, (num_nodes, num_nodes)) # create sparse matrix in COO format
+    
+    num_edges::Int = nnz(A)
+    if eltype(A) != T
+        A = T.(A)
+    end
+    return A, num_nodes, num_edges
+end
 
 end #module
