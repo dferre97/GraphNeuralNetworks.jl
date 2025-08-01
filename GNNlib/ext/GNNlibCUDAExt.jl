@@ -3,7 +3,7 @@ module GNNlibCUDAExt
 using CUDA
 using Random, Statistics, LinearAlgebra
 using GNNlib: GNNlib, propagate, copy_xj, e_mul_xj, w_mul_xj
-using GNNGraphs: GNNGraph, COO_T, SPARSE_T
+using GNNGraphs: GNNGraph, COO_T, SPARSE_T, adjacency_matrix
 
 ###### PROPAGATE SPECIALIZATIONS ####################
 
@@ -12,7 +12,13 @@ using GNNGraphs: GNNGraph, COO_T, SPARSE_T
 ## avoid the fast path on gpu until we have better cuda support
 function GNNlib.propagate(::typeof(copy_xj), g::GNNGraph{<:COO_T}, ::typeof(+),
         xi, xj::AnyCuMatrix, e)
-    propagate((xi, xj, e) -> copy_xj(xi, xj, e), g, +, xi, xj, e)
+    @debug "Using CUDA propagate for copy_xj"
+    A = adjacency_matrix(g, eltype(xj); weighted = false)
+    if g.is_coalesced
+        return (A' * xj')' # workaround for CUDA issue: https://github.com/JuliaGPU/CUDA.jl/issues/2820
+    else
+        return xj * A
+    end
 end
 
 ## E_MUL_XJ 
