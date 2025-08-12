@@ -148,7 +148,7 @@ end
 """
     coalesce(g::GNNGraph; aggr=+)
 
-Return a new GNNGraph where all multiple edges between the same pair of nodes are merged (using aggr for edge weights and features), and the edge indices are sorted lexicographically (by source, then target).
+Return a new GNNGraph where all multiple edges between the same pair of nodes are merged (using aggr for edge weights and features), and the edge indices are sorted lexicographically (by target, then by source).
 This method is only applicable to graphs of type `:coo`.
 
 `aggr` can take value `+`,`min`, `max` or `mean`.
