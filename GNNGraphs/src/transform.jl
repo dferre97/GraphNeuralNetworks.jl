@@ -158,7 +158,8 @@ function Base.coalesce(g::GNNGraph{<:COO_T}; aggr = +)
     w = get_edge_weight(g)
     edata = g.edata
     num_edges = g.num_edges
-    idxs, idxmax = edge_encoding(s, t, g.num_nodes)
+    # order by target first and then source as a workaround of CUDA.jl issue: https://github.com/JuliaGPU/CUDA.jl/issues/2820
+    idxs, idxmax = edge_encoding(t, s, g.num_nodes)
 
     perm = sortperm(idxs)
     idxs = idxs[perm]

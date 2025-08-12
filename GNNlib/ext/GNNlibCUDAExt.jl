@@ -14,11 +14,8 @@ function GNNlib.propagate(::typeof(copy_xj), g::GNNGraph{<:COO_T}, ::typeof(+),
         xi, xj::AnyCuMatrix, e)
     @debug "Using CUDA propagate for copy_xj"
     A = adjacency_matrix(g, eltype(xj); weighted = false)
-    if g.is_coalesced
-        return (A' * xj')' # workaround for CUDA issue: https://github.com/JuliaGPU/CUDA.jl/issues/2820
-    else
-        return xj * A
-    end
+
+    return xj * A
 end
 
 ## E_MUL_XJ 
