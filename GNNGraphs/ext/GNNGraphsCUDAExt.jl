@@ -14,20 +14,6 @@ const CUDA_COO_T = Tuple{T, T, V} where {T <: AnyCuArray{<:Integer}, V <: Union{
 
 GNNGraphs._rand_dense_vector(A::CUMAT_T) = CUDA.randn(size(A, 1))
 
-function Graphs.adjacency_matrix(g::GNNGraph{<:CUDA_COO_T}, T::DataType = eltype(g); dir = :out,
-                                 weighted = true)
-    @debug "Using CUDA adjacency_matrix for GNNGraph"
-    if !g.is_coalesced
-        # Revisit after 
-        # https://github.com/JuliaGPU/CUDA.jl/issues/1113
-        A, n, m = GNNGraphs.to_dense(g.graph, T; num_nodes = g.num_nodes, weighted) # if not coalesce, construction of sparse matrix is slow
-    else
-        A, n, m = GNNGraphs.to_sparse(g.graph, T; num_nodes = g.num_nodes, weighted)
-    end
-    @assert size(A) == (n, n)
-    return dir == :out ? A : A'
-end
-
 # Transform
 
 GNNGraphs.dense_zeros_like(a::CUMAT_T, T::Type, sz = size(a)) = CUDA.zeros(T, sz)
@@ -54,9 +40,9 @@ end
 # Convert
 
 function GNNGraphs.to_sparse(coo::CUDA_COO_T, T = nothing; dir = :out, num_nodes = nothing,
-                   weighted = true)
+                   weighted = true, is_coalesced = false)
     s, t, eweight = coo
-    @debug "Using CUDA to_sparse for COO"
+    @debug "Using CUDA to_sparse for COO with is_coalesced=$is_coalesced"
     T = T === nothing ? (eweight === nothing ? eltype(s) : eltype(eweight)) : T
 
     if eweight === nothing || !weighted
@@ -64,8 +50,14 @@ function GNNGraphs.to_sparse(coo::CUDA_COO_T, T = nothing; dir = :out, num_nodes
     end
 
     num_nodes::Int = isnothing(num_nodes) ? max(maximum(s), maximum(t)) : num_nodes
-    A = CUDA.CUSPARSE.CuSparseMatrixCOO{T,eltype(s)}(s, t, eweight, (num_nodes, num_nodes)) # create sparse matrix in COO format
     
+    # if coalesced build directly sparse coo matrix
+    if is_coalesced
+        A = CUDA.CUSPARSE.CuSparseMatrixCOO{T,eltype(s)}(s, t, eweight, (num_nodes, num_nodes)) 
+    else
+        A = sparse(s, t, eweight, num_nodes, num_nodes)
+    end
+
     num_edges::Int = nnz(A)
     if eltype(A) != T
         A = T.(A)

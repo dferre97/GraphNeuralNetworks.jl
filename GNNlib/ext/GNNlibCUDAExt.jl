@@ -3,7 +3,9 @@ module GNNlibCUDAExt
 using CUDA
 using Random, Statistics, LinearAlgebra
 using GNNlib: GNNlib, propagate, copy_xj, e_mul_xj, w_mul_xj
-using GNNGraphs: GNNGraph, COO_T, SPARSE_T, adjacency_matrix
+using GNNGraphs: GNNGraph, COO_T, SPARSE_T
+
+const CUDA_COO_T = Tuple{T, T, V} where {T <: AnyCuArray{<:Integer}, V <: Union{Nothing, AnyCuArray}}
 
 ###### PROPAGATE SPECIALIZATIONS ####################
 
@@ -13,7 +15,7 @@ using GNNGraphs: GNNGraph, COO_T, SPARSE_T, adjacency_matrix
 function GNNlib.propagate(::typeof(copy_xj), g::GNNGraph{<:COO_T}, ::typeof(+),
         xi, xj::AnyCuMatrix, e)
     @debug "Using CUDA propagate for copy_xj"
-    A = adjacency_matrix(g, eltype(xj); weighted = false)
+    A = _adjacency_matrix(g, eltype(xj); weighted = false)
 
     return xj * A
 end
@@ -44,5 +46,21 @@ end
 # compute_degree(A) = Diagonal(1f0 ./ vec(sum(A; dims=2)))
 
 # Flux.Zygote.@nograd compute_degree
+
+## CUSTOM ADJACENCY_MATRIX IMPLEMENTATION FOR CUDA COO GRAPHS, returning dense matrix when not coalesced, more efficient 
+
+function _adjacency_matrix(g::GNNGraph{<:CUDA_COO_T}, T::DataType = eltype(g); dir = :out,
+                                 weighted = true)
+    @debug "Using CUDA _adjacency_matrix for COO GNNGraph"
+    if !g.is_coalesced
+        # Revisit after 
+        # https://github.com/JuliaGPU/CUDA.jl/issues/1113
+        A, n, m = GNNGraphs.to_dense(g.graph, T; num_nodes = g.num_nodes, weighted) # if not coalesced, construction of sparse matrix is slow
+    else
+        A, n, m = GNNGraphs.to_sparse(g.graph, T; num_nodes = g.num_nodes, weighted, is_coalesced = true)
+    end
+    @assert size(A) == (n, n)
+    return dir == :out ? A : A'
+end
 
 end #module
