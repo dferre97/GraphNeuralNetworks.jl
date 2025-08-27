@@ -3,7 +3,7 @@ module GNNlibCUDAExt
 using CUDA
 using Random, Statistics, LinearAlgebra
 using GNNlib: GNNlib, propagate, copy_xj, e_mul_xj, w_mul_xj
-using GNNGraphs: GNNGraph, COO_T, SPARSE_T
+using GNNGraphs: GNNGraph, COO_T, SPARSE_T, to_dense, to_sparse
 
 const CUDA_COO_T = Tuple{T, T, V} where {T <: AnyCuArray{<:Integer}, V <: Union{Nothing, AnyCuArray}}
 
@@ -55,9 +55,9 @@ function _adjacency_matrix(g::GNNGraph{<:CUDA_COO_T}, T::DataType = eltype(g); d
     if !g.is_coalesced
         # Revisit after 
         # https://github.com/JuliaGPU/CUDA.jl/issues/1113
-        A, n, m = GNNGraphs.to_dense(g.graph, T; num_nodes = g.num_nodes, weighted) # if not coalesced, construction of sparse matrix is slow
+        A, n, m = to_dense(g.graph, T; num_nodes = g.num_nodes, weighted) # if not coalesced, construction of sparse matrix is slow
     else
-        A, n, m = GNNGraphs.to_sparse(g.graph, T; num_nodes = g.num_nodes, weighted, is_coalesced = true)
+        A, n, m = to_sparse(g.graph, T; num_nodes = g.num_nodes, weighted, is_coalesced = true)
     end
     @assert size(A) == (n, n)
     return dir == :out ? A : A'
