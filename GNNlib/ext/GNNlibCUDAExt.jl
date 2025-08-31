@@ -15,7 +15,6 @@ const CUDA_COO_T = Tuple{T, T, V} where {T <: AnyCuArray{<:Integer}, V <: Union{
 ## avoid the fast path on gpu until we have better cuda support
 function GNNlib.propagate(::typeof(copy_xj), g::GNNGraph{<:COO_T}, ::typeof(+),
         xi, xj::AnyCuMatrix, e)
-    @debug "Using CUDA propagate for copy_xj"
     A = _adjacency_matrix(g, eltype(xj); weighted = false)
 
     return xj * A
@@ -52,7 +51,6 @@ end
 
 function _adjacency_matrix(g::GNNGraph{<:CUDA_COO_T}, T::DataType = eltype(g); dir = :out,
                                  weighted = true)
-    @debug "Using CUDA _adjacency_matrix for COO GNNGraph"
     if !g.is_coalesced
         # Revisit after 
         # https://github.com/JuliaGPU/CUDA.jl/issues/1113

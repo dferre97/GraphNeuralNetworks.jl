@@ -42,7 +42,6 @@ end
 function GNNGraphs.to_sparse(coo::CUDA_COO_T, T = nothing; dir = :out, num_nodes = nothing,
                    weighted = true, is_coalesced = false)
     s, t, eweight = coo
-    @debug "Using CUDA to_sparse for COO with is_coalesced=$is_coalesced"
     T = T === nothing ? (eweight === nothing ? eltype(s) : eltype(eweight)) : T
 
     if eweight === nothing || !weighted
