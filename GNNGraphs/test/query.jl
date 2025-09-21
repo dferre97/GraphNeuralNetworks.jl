@@ -272,6 +272,15 @@ end
 
             @test gw == [1, 1, 1]
         end
+        
+        @testset  "fmt" begin
+            Asparse = adjacency_matrix(g, weighted = false, fmt = :sparse)
+            @test Asparse isa AbstractSparseMatrix 
+            Adense = adjacency_matrix(g, weighted = false, fmt = :dense)
+            @test Adense isa AbstractMatrix
+            @test !(Adense isa AbstractSparseMatrix)
+            @test collect(Asparse) == Adense
+        end
     end
 
     @testset "khop_adj" begin
